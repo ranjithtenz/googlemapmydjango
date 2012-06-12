@@ -1,0 +1,83 @@
+{% extends "admin/cms/page/plugin_change_form.html" %}
+{% comment %}
+
+Copyright (c) 2012, Daniel Barbeau Vasquez
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of Daniel Barbeau Vasquez nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL DANIEL BARBEAU VASQUEZ BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Author: Daniel Barbeau Vasquez
+Contributors: -
+
+{% endcomment %}
+
+
+{% block content %}
+{{ block.super }}
+
+<script type="text/javascript">
+
+function init_model_fields() {
+    function display_field_names( model_fields, meta_model_fields ) {
+	console.log("updating, "+meta_model_fields+"|"+model_fields);
+	for (var i=0; i<meta_model_fields.length; i++) {
+	    var meta_field_label = document.getElementById("id_"+meta_model_fields[i]+"_opts");
+	    if (meta_field_label === null) {
+		meta_field_label    = document.createElement("p");
+		meta_field_label.id = "id_"+meta_model_fields[i]+"_opts";
+		// let's place it
+		document.getElementById("id_"+meta_model_fields[i]).parentNode.appendChild(meta_field_label);
+	    }
+	    meta_field_label.innerHTML = "Possible but not necessarily valid options : "+model_fields;		
+	}
+    }
+
+    function update_available_fields(change){
+	var opts;
+	if (change === undefined) {
+	    opts = { gmp_pk : {{ plugin.pk }} };
+	}
+	else {
+	    var select = change.target;
+	    var selected = select.options[select.selectedIndex].label;
+	    opts = {modname: selected};
+	}
+
+	$.get( "/gmp/admin/fields",
+	       opts,
+	       function(data, status, jqXHR) {
+		   display_field_names(data.model_fields, data.meta_model_fields);
+	       },
+	       "json");
+    }
+
+    update_available_fields();
+    document.getElementById("id_m_marker").onchange=update_available_fields;    
+    
+}
+
+init_model_fields();
+</script>
+
+
+{% endblock %}
